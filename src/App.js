@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import './App.css'; 
+import './App.css';
+import EntradaJogador from './EntradaJogador';
 
 function App() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [players, setPlayers] = useState([]);
   const [numero, setNumero] = useState(0);
   const [progresso, setProgresso] = useState(0);
-  const [players, setPlayers] = useState([
-    { id: 1, name: "André", score: 0, number: '' },
-    { id: 2, name: "Aline", score: 0, number: '' },
-    { id: 3, name: "Ana Luiza", score: 0, number: '' },
-    { id: 4, name: "Lucas", score: 0, number: '' },
-  ]);
   const [message, setMessage] = useState("");
-  const [gameStarted, setGameStarted] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
 
   useEffect(() => {
     setProgresso(numero * 10);
   }, [numero]);
+
+  const addPlayer = (nome) => {
+    setPlayers([...players, { id: players.length + 1, name: nome, score: 0, number: '' }]);
+  };
+
+  const startGame = () => {
+    if (players.length >= 2) {
+      setGameStarted(true);
+      setMessage("Jogo iniciado! Escolham seus números.");
+    } else {
+      alert("São necessários pelo menos 2 jogadores para iniciar o jogo.");
+    }
+  };
 
   const handleNumberChange = (id, value) => {
     const newValue = value.replace(/[^1-9]/g, '').slice(0, 2);
@@ -27,7 +36,7 @@ function App() {
       return;
     }
 
-    const isDuplicate = players.some(player => player.id !== id && parseInt(player.number) === numberInt);
+    const isDuplicate = players.some(player => player.id !== id && player.number === newValue);
     if (isDuplicate) {
       setMessage("Este número já foi escolhido por outro jogador!");
       return;
@@ -37,16 +46,6 @@ function App() {
       player.id === id ? {...player, number: newValue} : player
     ));
     setMessage("");
-  };
-
-  const startGame = () => {
-    if (players.some(player => player.number === '')) {
-      setMessage("Todos os jogadores devem escolher um número entre 1 e 10!");
-      return;
-    }
-    setGameStarted(true);
-    setMessage("Jogo iniciado! Clique em 'Girar Dado' para jogar.");
-    setResultMessage("");
   };
 
   const rollDice = () => {
@@ -67,13 +66,34 @@ function App() {
   };
 
   const resetGame = () => {
+    setGameStarted(false);
+    setPlayers([]);
     setNumero(0);
     setProgresso(0);
-    setPlayers(players.map(player => ({ ...player, score: 0, number: '' })));
     setMessage("");
     setResultMessage("");
-    setGameStarted(false);
   };
+
+  if (!gameStarted) {
+    return (
+      <div className="container">
+        <EntradaJogador onAddPlayer={addPlayer} playersCount={players.length} />
+        {players.length > 0 && (
+          <div className="card mt-4">
+            <h2 className="subtitle">Jogadores:</h2>
+            <ul>
+              {players.map((player, index) => (
+                <li key={index}>{player.name}</li>
+              ))}
+            </ul>
+            <button onClick={startGame} className="button primary-button mt-4">
+              Iniciar Jogo ({players.length} jogadores)
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="container">
@@ -95,7 +115,6 @@ function App() {
                 type="text" 
                 value={player.number}
                 onChange={(e) => handleNumberChange(player.id, e.target.value)}
-                disabled={gameStarted}
                 placeholder="1-10"
                 className="input"
               />
@@ -103,15 +122,9 @@ function App() {
           ))}
         </div>
         <div className="button-container">
-          {!gameStarted ? (
-            <button onClick={startGame} className="button primary-button">
-              Iniciar Jogo
-            </button>
-          ) : (
-            <button onClick={rollDice} className="button primary-button">
-              Girar Dado
-            </button>
-          )}
+          <button onClick={rollDice} className="button primary-button">
+            Girar Dado
+          </button>
           <button onClick={resetGame} className="button secondary-button">
             Reiniciar
           </button>
