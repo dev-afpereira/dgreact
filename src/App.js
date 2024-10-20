@@ -13,28 +13,28 @@ function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState([]);
   const [gameState, setGameState] = useState({});
-  const startGame = async () => {
-    if (players.length >= 2) {
-      await update(ref(database, `games/${gameId}`), { started: true });
-    } else {
-      console.log("Não há jogadores suficientes para iniciar o jogo");
-    }
-  
-  };
 
   useEffect(() => {
+    console.log('App montado ou gameId mudou:', gameId);
     if (gameId) {
       const gameRef = ref(database, `games/${gameId}`);
-      onValue(gameRef, (snapshot) => {
+      return onValue(gameRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
+          console.log('Dados do jogo atualizados:', data);
           setGameStarted(data.started || false);
           setPlayers(Object.values(data.players || {}));
           setGameState(data);
         }
+      }, (error) => {
+        console.error('Erro ao ler dados do Firebase:', error);
       });
     }
   }, [gameId]);
+
+  useEffect(() => {
+    console.log('gameStarted mudou para:', gameStarted);
+  }, [gameStarted]);
 
   const createOrJoinGame = async (playerName, gameIdInput, action) => {
     console.log('createOrJoinGame chamado:', playerName, gameIdInput, action);
@@ -53,19 +53,17 @@ function App() {
       }
   
       const newPlayerRef = push(ref(database, `games/${resultGameId}/players`));
-      console.log('Tentando adicionar jogador ao Firebase');
+      const newPlayerId = newPlayerRef.key;
       await set(newPlayerRef, {
-        id: newPlayerRef.key,
+        id: newPlayerId,
         name: playerName,
         score: 0,
         number: ''
       });
+  
       console.log('Jogador adicionado com sucesso');
-  
       setGameId(resultGameId);
-      setPlayerId(newPlayerRef.key);
-      console.log('GameId e PlayerId atualizados:', resultGameId, newPlayerRef.key);
-  
+      setPlayerId(newPlayerId);
       return resultGameId;
     } catch (error) {
       console.error('Erro em createOrJoinGame:', error);
@@ -73,28 +71,49 @@ function App() {
     }
   };
 
-  const SalaDeEsperaWrapper = () => {
-    return gameId && playerId ? (
-      <SalaDeEspera 
-        gameId={gameId} 
-        players={players} 
-        playerId={playerId} 
-        onStartGame={startGame}
-      />
-    ) : (
-      <Navigate to="/" replace />
-    );
+  const startGame = async () => {
+    console.log('startGame chamado');
+    if (players.length >= 2) {
+      try {
+        await update(ref(database, `games/${gameId}`), { started: true });
+        console.log('Jogo iniciado com sucesso no Firebase');
+      } catch (error) {
+        console.error('Erro ao iniciar o jogo:', error);
+      }
+    } else {
+      console.log("Não há jogadores suficientes para iniciar o jogo");
+    }
   };
+
+  console.log('Renderizando App com:', { gameId, playerId, gameStarted });
 
   return (
     <Router>
       <Routes>
-      <Route path="/" element={<EntradaJogador onAddPlayer={createOrJoinGame} />} />
-      <Route path="/sala-de-espera/:gameId" element={<SalaDeEsperaWrapper />} />
+        <Route path="/" element={<EntradaJogador onAddPlayer={createOrJoinGame} />} />
+        <Route 
+          path="/sala-de-espera/:gameId" 
+          element={
+            gameId && playerId ? (
+              gameStarted ? (
+                <Navigate to={`/jogo/${gameId}`} replace />
+              ) : (
+                <SalaDeEspera 
+                  gameId={gameId} 
+                  players={players} 
+                  playerId={playerId} 
+                  onStartGame={startGame}
+                />
+              )
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } 
+        />
         <Route 
           path="/jogo/:gameId" 
           element={
-            gameId && playerId && gameStarted ? (
+            gameStarted ? (
               <JogoDoNumero 
                 gameState={gameState} 
                 playerId={playerId} 
@@ -102,7 +121,7 @@ function App() {
                 gameId={gameId}
               />
             ) : (
-              <Navigate to="/" replace />
+              <Navigate to={`/sala-de-espera/${gameId}`} replace />
             )
           } 
         />
