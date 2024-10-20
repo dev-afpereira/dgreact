@@ -1,33 +1,63 @@
 import React, { useState, useEffect } from 'react';
+import { ref, onValue, push, set, update } from 'firebase/database';
+import { database } from './firebaseConfig';
 import './App.css';
 import EntradaJogador from './EntradaJogador';
 
 function App() {
+  const [gameId, setGameId] = useState(null);
+  const [playerId, setPlayerId] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState([]);
   const [numero, setNumero] = useState(0);
-  const [progresso, setProgresso] = useState(0);
   const [message, setMessage] = useState("");
   const [resultMessage, setResultMessage] = useState("");
 
   useEffect(() => {
-    setProgresso(numero * 10);
-  }, [numero]);
+    if (gameId) {
+      const gameRef = ref(database, `games/${gameId}`);
+      onValue(gameRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setGameStarted(data.started || false);
+          setPlayers(Object.values(data.players || {}));
+          setNumero(data.currentNumber || 0);
+          setResultMessage(data.resultMessage || "");
+        }
+      });
+    }
+  }, [gameId]);
 
-  const addPlayer = (nome) => {
-    setPlayers([...players, { id: players.length + 1, name: nome, score: 0, number: '' }]);
+  const createOrJoinGame = async (playerName) => {
+    let gameReference;
+    if (!gameId) {
+      gameReference = push(ref(database, 'games'));
+      setGameId(gameReference.key);
+    } else {
+      gameReference = ref(database, `games/${gameId}`);
+    }
+
+    const newPlayerRef = push(ref(database, `games/${gameReference.key}/players`));
+    await set(newPlayerRef, {
+      id: newPlayerRef.key,
+      name: playerName,
+      score: 0,
+      number: ''
+    });
+
+    setPlayerId(newPlayerRef.key);
+    setMessage(`Bem-vindo, ${playerName}! ID do jogo: ${gameReference.key}`);
   };
 
-  const startGame = () => {
+  const startGame = async () => {
     if (players.length >= 2) {
-      setGameStarted(true);
-      setMessage("Jogo iniciado! Escolham seus números.");
+      await update(ref(database, `games/${gameId}`), { started: true });
     } else {
-      alert("São necessários pelo menos 2 jogadores para iniciar o jogo.");
+      setMessage("São necessários pelo menos 2 jogadores para iniciar o jogo.");
     }
   };
 
-  const handleNumberChange = (id, value) => {
+  const handleNumberChange = async (value) => {
     const newValue = value.replace(/[^1-9]/g, '').slice(0, 2);
     const numberInt = parseInt(newValue);
     
@@ -36,61 +66,69 @@ function App() {
       return;
     }
 
-    const isDuplicate = players.some(player => player.id !== id && player.number === newValue);
+    const isDuplicate = players.some(player => player.id !== playerId && player.number === newValue);
     if (isDuplicate) {
       setMessage("Este número já foi escolhido por outro jogador!");
       return;
     }
 
-    setPlayers(players.map(player => 
-      player.id === id ? {...player, number: newValue} : player
-    ));
+    await update(ref(database, `games/${gameId}/players/${playerId}`), { number: newValue });
     setMessage("");
   };
 
-  const rollDice = () => {
+  const rollDice = async () => {
     const newNumber = Math.floor(Math.random() * 10) + 1;
-    setNumero(newNumber);
+    const updates = {
+      currentNumber: newNumber,
+      resultMessage: ""
+    };
 
     const winners = players.filter(player => parseInt(player.number) === newNumber);
     if (winners.length > 0) {
-      setPlayers(players.map(player => 
-        winners.some(winner => winner.id === player.id) 
-          ? {...player, score: player.score + 1}
-          : player
-      ));
-      setResultMessage(`${winners.map(w => w.name).join(" e ")} acertou!`);
+      winners.forEach(winner => {
+        updates[`players/${winner.id}/score`] = (winner.score || 0) + 1;
+      });
+      updates.resultMessage = `${winners.map(w => w.name).join(" e ")} acertou!`;
     } else {
-      setResultMessage(`Ninguém acertou desta vez.`);
+      updates.resultMessage = `Ninguém acertou desta vez.`;
     }
+
+    await update(ref(database, `games/${gameId}`), updates);
   };
 
-  const resetGame = () => {
+  const resetGame = async () => {
+    await set(ref(database, `games/${gameId}`), null);
+    setGameId(null);
+    setPlayerId(null);
     setGameStarted(false);
     setPlayers([]);
     setNumero(0);
-    setProgresso(0);
     setMessage("");
     setResultMessage("");
   };
 
+  if (!gameId || !playerId) {
+    return <EntradaJogador onAddPlayer={createOrJoinGame} />;
+  }
+
   if (!gameStarted) {
     return (
       <div className="container">
-        <EntradaJogador onAddPlayer={addPlayer} playersCount={players.length} />
-        {players.length > 0 && (
-          <div className="card mt-4">
-            <h2 className="subtitle">Jogadores:</h2>
-            <ul>
-              {players.map((player, index) => (
-                <li key={index}>{player.name}</li>
-              ))}
-            </ul>
+        <div className="card">
+          <h1 className="title">Sala de Espera</h1>
+          <p>ID do Jogo: {gameId}</p>
+          <h2 className="subtitle">Jogadores:</h2>
+          <ul>
+            {players.map((player) => (
+              <li key={player.id}>{player.name}</li>
+            ))}
+          </ul>
+          {playerId === players[0]?.id && (
             <button onClick={startGame} className="button primary-button mt-4">
               Iniciar Jogo ({players.length} jogadores)
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
@@ -103,32 +141,36 @@ function App() {
           {numero === 0 ? '?' : numero}
         </div>
         {resultMessage && <div className="result-message">{resultMessage}</div>}
-        <div className="progress-container">
-          <div className="progress-bar" style={{width: `${progresso}%`}}></div>
-        </div>
         <div className="players-container">
           {players.map(player => (
             <div key={player.id} className="player-card">
               <div className="player-name">{player.name}</div>
-              <div className="player-score">Pontos: {player.score}</div>
-              <input 
-                type="text" 
-                value={player.number}
-                onChange={(e) => handleNumberChange(player.id, e.target.value)}
-                placeholder="1-10"
-                className="input"
-              />
+              <div className="player-score">Pontos: {player.score || 0}</div>
+              {player.id === playerId && (
+                <input 
+                  type="text" 
+                  value={player.number || ''}
+                  onChange={(e) => handleNumberChange(e.target.value)}
+                  placeholder="1-10"
+                  className="input"
+                />
+              )}
+              {player.id !== playerId && (
+                <div>{player.number ? 'Número escolhido' : 'Aguardando...'}</div>
+              )}
             </div>
           ))}
         </div>
-        <div className="button-container">
-          <button onClick={rollDice} className="button primary-button">
-            Girar Dado
-          </button>
-          <button onClick={resetGame} className="button secondary-button">
-            Reiniciar
-          </button>
-        </div>
+        {playerId === players[0]?.id && (
+          <div className="button-container">
+            <button onClick={rollDice} className="button primary-button">
+              Girar Dado
+            </button>
+            <button onClick={resetGame} className="button secondary-button">
+              Reiniciar
+            </button>
+          </div>
+        )}
       </div>
       {message && <div className="message">{message}</div>}
     </div>
