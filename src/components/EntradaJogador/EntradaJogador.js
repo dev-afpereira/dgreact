@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './EntradaJogador.css';
 
 function EntradaJogador({ onAddPlayer }) {
   const [nome, setNome] = useState('');
   const [gameId, setGameId] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleSubmit chamado');
+  
     if (nome.trim() !== '') {
-      if (gameId.trim() !== '') {
-        onAddPlayer(nome, gameId, 'join');
-      } else {
-        onAddPlayer(nome, null, 'create');
+      try {
+        console.log('Tentando adicionar jogador:', nome, gameId);
+        const resultGameId = await onAddPlayer(nome, gameId, gameId ? 'join' : 'create');
+        console.log('Jogador adicionado, resultGameId:', resultGameId);
+  
+        if (resultGameId) {
+          console.log('Navegando para:', `/sala-de-espera/${resultGameId}`);
+          navigate(`/sala-de-espera/${resultGameId}`);
+        } else {
+          console.error('resultGameId é undefined ou null');
+        }
+      } catch (error) {
+        console.error('Erro ao adicionar jogador:', error);
+        alert(`Erro ao ${gameId ? 'juntar-se ao' : 'criar'} jogo: ${error.message}`);
       }
     } else {
       alert('Por favor, insira seu nome.');

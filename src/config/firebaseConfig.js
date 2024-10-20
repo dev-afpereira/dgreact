@@ -4,6 +4,7 @@ import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBkzQguetTGT3WH_YbWT_cwN4WuAsjUDeM",
+    databaseURL: "https://o-jogo-do-numero-default-rtdb.europe-west1.firebasedatabase.app",
     authDomain: "o-jogo-do-numero.firebaseapp.com",
     projectId: "o-jogo-do-numero",
     storageBucket: "o-jogo-do-numero.appspot.com",
