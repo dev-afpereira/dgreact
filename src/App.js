@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ref, onValue, push, set, update } from 'firebase/database';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { ref, onValue, push, set, update, remove, get } from 'firebase/database';
 import { database } from './config/firebaseConfig';
 import './App.css';
 import EntradaJogador from './components/EntradaJogador/EntradaJogador';
@@ -11,33 +11,25 @@ function App() {
   const [gameId, setGameId] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
-  const [players, setPlayers] = useState([]);
+  const [players, setPlayers] = useState({});
   const [gameState, setGameState] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('App montado ou gameId mudou:', gameId);
     if (gameId) {
       const gameRef = ref(database, `games/${gameId}`);
       return onValue(gameRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          console.log('Dados do jogo atualizados:', data);
           setGameStarted(data.started || false);
-          setPlayers(Object.values(data.players || {}));
+          setPlayers(data.players || {});
           setGameState(data);
         }
-      }, (error) => {
-        console.error('Erro ao ler dados do Firebase:', error);
       });
     }
   }, [gameId]);
 
-  useEffect(() => {
-    console.log('gameStarted mudou para:', gameStarted);
-  }, [gameStarted]);
-
   const createOrJoinGame = async (playerName, gameIdInput, action) => {
-    console.log('createOrJoinGame chamado:', playerName, gameIdInput, action);
     let gameReference;
     let resultGameId;
     let newPlayerId;
@@ -46,43 +38,41 @@ function App() {
       if (action === 'create') {
         gameReference = push(ref(database, 'games'));
         resultGameId = gameReference.key;
-        console.log('Novo jogo criado:', resultGameId);
       } else {
         resultGameId = gameIdInput;
         gameReference = ref(database, `games/${resultGameId}`);
-        console.log('Juntando-se ao jogo:', resultGameId);
       }
   
       const newPlayerRef = push(ref(database, `games/${resultGameId}/players`));
       newPlayerId = newPlayerRef.key;
   
+      const newPlayerData = {
+        id: newPlayerId,
+        name: playerName,
+        score: 0,
+        number: '',
+        consecutiveHits: 0,
+        level: 1
+      };
+
       if (action === 'create') {
         await set(gameReference, {
           players: {
-            [newPlayerId]: {
-              id: newPlayerId,
-              name: playerName,
-              score: 0,
-              number: ''
-            }
+            [newPlayerId]: newPlayerData
           },
           started: false,
           currentTurn: newPlayerId,
-          message: ''
+          message: '',
+          gameMode: 'normal',
+          roundWins: {},
+          gameOver: false
         });
       } else {
-        // Adicionar o jogador ao jogo existente
         await update(gameReference, {
-          [`players/${newPlayerId}`]: {
-            id: newPlayerId,
-            name: playerName,
-            score: 0,
-            number: ''
-          }
+          [`players/${newPlayerId}`]: newPlayerData
         });
       }
   
-      console.log('Jogador adicionado com sucesso');
       setGameId(resultGameId);
       setPlayerId(newPlayerId);
       return resultGameId;
@@ -92,17 +82,17 @@ function App() {
     }
   };
 
-  const startGame = async () => {
-    console.log('startGame chamado');
-    if (players.length >= 2) {
+  const startGame = async (gameMode) => {
+    if (Object.keys(players).length >= 2) {
       try {
-        const firstPlayerId = players[0].id;
+        const firstPlayerId = Object.keys(players)[0];
         await update(ref(database, `games/${gameId}`), { 
           started: true,
           currentTurn: firstPlayerId,
-          message: `O jogo começou! É a vez de ${players[0].name} girar o dado.`
+          message: `O jogo começou! É a vez de ${players[firstPlayerId].name} girar o dado.`,
+          gameMode: gameMode,
+          roundWins: {}
         });
-        console.log('Jogo iniciado com sucesso no Firebase');
       } catch (error) {
         console.error('Erro ao iniciar o jogo:', error);
       }
@@ -111,49 +101,93 @@ function App() {
     }
   };
 
-  console.log('Renderizando App com:', { gameId, playerId, gameStarted });
+  const exitGame = async () => {
+    try {
+      if (gameId && playerId) {
+        const gameRef = ref(database, `games/${gameId}`);
+        const gameSnapshot = await get(gameRef);
+        const gameData = gameSnapshot.val();
+
+        if (gameData && gameData.players) {
+          const updatedPlayers = { ...gameData.players };
+          delete updatedPlayers[playerId];
+
+          if (Object.keys(updatedPlayers).length === 0) {
+            // Se não há mais jogadores, remove o jogo completamente
+            await remove(gameRef);
+          } else {
+            // Se ainda há jogadores, atualiza a lista de jogadores
+            await update(gameRef, { players: updatedPlayers });
+
+            // Se o jogador que saiu era o atual, passa a vez para o próximo
+            if (gameData.currentTurn === playerId) {
+              const nextPlayerId = Object.keys(updatedPlayers)[0];
+              await update(gameRef, { currentTurn: nextPlayerId });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao sair do jogo:', error);
+    } finally {
+      setGameId(null);
+      setPlayerId(null);
+      setGameStarted(false);
+      setPlayers({});
+      setGameState({});
+      navigate('/');
+    }
+  };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<EntradaJogador onAddPlayer={createOrJoinGame} />} />
-        <Route 
-          path="/sala-de-espera/:gameId" 
-          element={
-            gameId && playerId ? (
-              gameStarted ? (
-                <Navigate to={`/jogo/${gameId}`} replace />
-              ) : (
-                <SalaDeEspera 
-                  gameId={gameId} 
-                  players={players} 
-                  playerId={playerId} 
-                  onStartGame={startGame}
-                />
-              )
-            ) : (
-              <Navigate to="/" replace />
-            )
-          } 
-        />
-        <Route 
-          path="/jogo/:gameId" 
-          element={
+    <Routes>
+      <Route path="/" element={<EntradaJogador onAddPlayer={createOrJoinGame} />} />
+      <Route 
+        path="/sala-de-espera/:gameId" 
+        element={
+          gameId && playerId ? (
             gameStarted ? (
-              <JogoDoNumero 
-                gameState={gameState} 
-                playerId={playerId} 
-                database={database} 
-                gameId={gameId}
-              />
+              <Navigate to={`/jogo/${gameId}`} replace />
             ) : (
-              <Navigate to={`/sala-de-espera/${gameId}`} replace />
+              <SalaDeEspera 
+                gameId={gameId} 
+                players={players} 
+                playerId={playerId} 
+                onStartGame={startGame}
+                onExitGame={exitGame}
+              />
             )
-          } 
-        />
-      </Routes>
+          ) : (
+            <Navigate to="/" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/jogo/:gameId" 
+        element={
+          gameStarted ? (
+            <JogoDoNumero 
+              gameState={gameState} 
+              playerId={playerId} 
+              database={database} 
+              gameId={gameId}
+              onExitGame={exitGame}
+            />
+          ) : (
+            <Navigate to={`/sala-de-espera/${gameId}`} replace />
+          )
+        } 
+      />
+    </Routes>
+  );
+}
+
+function AppWrapper() {
+  return (
+    <Router>
+      <App />
     </Router>
   );
 }
 
-export default App;
+export default AppWrapper;

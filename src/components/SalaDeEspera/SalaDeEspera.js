@@ -1,21 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './SalaDeEspera.css';
 
 function SalaDeEspera({ gameId, players, playerId, onStartGame }) {
+  const [gameMode, setGameMode] = useState('normal');
+
+  const handleStartGame = () => {
+    onStartGame(gameMode);
+  };
+
+  const isAdmin = playerId === Object.keys(players)[0];
+
   return (
     <div className="container">
       <div className="card sala-espera">
         <h2>Sala de Espera</h2>
         <p>ID do Jogo: {gameId}</p>
-        <ul>
-          {players.map(player => (
-            <li key={player.id}>{player.name}</li>
+        <ul className="players-list">
+          {Object.values(players).map(player => (
+            <li key={player.id} className="player-item">
+              <span className="player-name">{player.name}</span>
+              <span className="player-info">Nível: {player.level || 1}, Pontos: {player.score || 0}</span>
+            </li>
           ))}
         </ul>
-        {playerId === players[0]?.id && (
-          <button className="button" onClick={onStartGame}>
-            Iniciar Jogo ({players.length} jogadores)
-          </button>
+        {isAdmin && (
+          <div className="game-options">
+            <select 
+              value={gameMode} 
+              onChange={(e) => setGameMode(e.target.value)}
+              className="game-mode-select"
+            >
+              <option value="normal">Modo Normal</option>
+              <option value="bestOfThree">Melhor de 3</option>
+            </select>
+            <button className="button start-game" onClick={handleStartGame}>
+              Iniciar Jogo ({Object.keys(players).length} jogadores)
+            </button>
+          </div>
+        )}
+        {!isAdmin && (
+          <p className="waiting-message">Aguardando o anfitrião iniciar o jogo...</p>
         )}
       </div>
     </div>

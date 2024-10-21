@@ -91,3 +91,33 @@ body {
     padding: 10px;
   }
 }
+
+/* Transição suave para mudança de tema */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Animação para o dado */
+@keyframes rollDice {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dice-rolling {
+  animation: rollDice 0.5s ease-in-out;
+}
+
+/* Animação para entrada/saída de jogadores */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.player-entering {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Transição suave para mudança de turno */
+.player-overview {
+  transition: background-color 0.3s ease;
+}
