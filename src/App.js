@@ -40,6 +40,7 @@ function App() {
     console.log('createOrJoinGame chamado:', playerName, gameIdInput, action);
     let gameReference;
     let resultGameId;
+    let newPlayerId;
   
     try {
       if (action === 'create') {
@@ -53,13 +54,33 @@ function App() {
       }
   
       const newPlayerRef = push(ref(database, `games/${resultGameId}/players`));
-      const newPlayerId = newPlayerRef.key;
-      await set(newPlayerRef, {
-        id: newPlayerId,
-        name: playerName,
-        score: 0,
-        number: ''
-      });
+      newPlayerId = newPlayerRef.key;
+  
+      if (action === 'create') {
+        await set(gameReference, {
+          players: {
+            [newPlayerId]: {
+              id: newPlayerId,
+              name: playerName,
+              score: 0,
+              number: ''
+            }
+          },
+          started: false,
+          currentTurn: newPlayerId,
+          message: ''
+        });
+      } else {
+        // Adicionar o jogador ao jogo existente
+        await update(gameReference, {
+          [`players/${newPlayerId}`]: {
+            id: newPlayerId,
+            name: playerName,
+            score: 0,
+            number: ''
+          }
+        });
+      }
   
       console.log('Jogador adicionado com sucesso');
       setGameId(resultGameId);
@@ -75,7 +96,12 @@ function App() {
     console.log('startGame chamado');
     if (players.length >= 2) {
       try {
-        await update(ref(database, `games/${gameId}`), { started: true });
+        const firstPlayerId = players[0].id;
+        await update(ref(database, `games/${gameId}`), { 
+          started: true,
+          currentTurn: firstPlayerId,
+          message: `O jogo começou! É a vez de ${players[0].name} girar o dado.`
+        });
         console.log('Jogo iniciado com sucesso no Firebase');
       } catch (error) {
         console.error('Erro ao iniciar o jogo:', error);

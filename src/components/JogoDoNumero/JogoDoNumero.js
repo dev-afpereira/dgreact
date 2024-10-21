@@ -1,94 +1,124 @@
-import React from 'react';
-import { ref, update, set } from 'firebase/database';
+import React, { useState, useEffect } from 'react';
+import { ref, update, onValue } from 'firebase/database';
+import './JogoDoNumero.css';
 
 function JogoDoNumero({ gameState, playerId, database, gameId }) {
-  const handleNumberChange = async (value) => {
-    const newValue = value.replace(/[^1-9]/g, '').slice(0, 2);
-    const numberInt = parseInt(newValue);
-    
-    if (numberInt > 10) {
-      alert("O número deve ser entre 1 e 10!");
-      return;
-    }
+  const [selectedNumber, setSelectedNumber] = useState('');
+  const [currentTurn, setCurrentTurn] = useState('');
+  const [message, setMessage] = useState('');
+  const [players, setPlayers] = useState({});
 
-    const isDuplicate = Object.values(gameState.players).some(player => player.id !== playerId && player.number === newValue);
-    if (isDuplicate) {
-      alert("Este número já foi escolhido por outro jogador!");
-      return;
-    }
+  useEffect(() => {
+    const gameRef = ref(database, `games/${gameId}`);
+    return onValue(gameRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setCurrentTurn(data.currentTurn || Object.keys(data.players)[0]);
+        setMessage(data.message || '');
+        setPlayers(data.players || {});
+      }
+    });
+  }, [database, gameId]);
 
-    await update(ref(database, `games/${gameId}/players/${playerId}`), { number: newValue });
+  const handleNumberSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedNumber >= 1 && selectedNumber <= 10) {
+      await update(ref(database, `games/${gameId}/players/${playerId}`), {
+        number: selectedNumber
+      });
+      setSelectedNumber('');
+    } else {
+      alert('Por favor, escolha um número entre 1 e 10.');
+    }
   };
 
   const rollDice = async () => {
-    const newNumber = Math.floor(Math.random() * 10) + 1;
-    const updates = {
-      currentNumber: newNumber,
-      resultMessage: ""
-    };
-
-    const winners = Object.values(gameState.players).filter(player => parseInt(player.number) === newNumber);
+    const diceNumber = Math.floor(Math.random() * 10) + 1;
+    const winners = Object.values(players).filter(player => parseInt(player.number) === diceNumber);
+    
+    let newMessage = `O dado rolou ${diceNumber}. `;
     if (winners.length > 0) {
-      winners.forEach(winner => {
-        updates[`players/${winner.id}/score`] = (winner.score || 0) + 1;
-      });
-      updates.resultMessage = `${winners.map(w => w.name).join(" e ")} acertou!`;
+      newMessage += `${winners.map(w => w.name).join(' e ')} acertou!`;
+      await Promise.all(winners.map(winner => 
+        update(ref(database, `games/${gameId}/players/${winner.id}`), {
+          score: (winner.score || 0) + 1
+        })
+      ));
     } else {
-      updates.resultMessage = `Ninguém acertou desta vez.`;
+      newMessage += 'Ninguém acertou desta vez.';
     }
 
-    await update(ref(database, `games/${gameId}`), updates);
-  };
+    const playerIds = Object.keys(players);
+    const nextPlayerIndex = (playerIds.indexOf(currentTurn) + 1) % playerIds.length;
+    const nextPlayerId = playerIds[nextPlayerIndex];
 
-  const resetGame = async () => {
-    await set(ref(database, `games/${gameId}/started`), false);
     await update(ref(database, `games/${gameId}`), {
-      currentNumber: 0,
-      resultMessage: "",
-      players: Object.fromEntries(
-        Object.entries(gameState.players).map(([key, player]) => [key, {...player, number: '', score: 0}])
-      )
+      currentTurn: nextPlayerId,
+      message: newMessage
     });
   };
 
+  const resetGame = async () => {
+    const resetPlayers = Object.entries(players).reduce((acc, [id, player]) => {
+      acc[id] = { ...player, number: '', score: 0 };
+      return acc;
+    }, {});
+
+    await update(ref(database, `games/${gameId}`), {
+      players: resetPlayers,
+      currentTurn: Object.keys(players)[0],
+      message: 'O jogo foi reiniciado. Escolham seus números!',
+    });
+  };
+
+  const isPlayerTurn = currentTurn === playerId;
+  const hasSelectedNumber = players[playerId]?.number !== undefined && players[playerId]?.number !== '';
+  const isAdmin = playerId === Object.keys(players)[0]; // Assume que o primeiro jogador é o admin
+
   return (
-    <div className="container">
-      <div className="card">
-        <h1 className="title">Jogo do Número</h1>
-        <div className="number-display">
-          {gameState.currentNumber === 0 ? '?' : gameState.currentNumber}
-        </div>
-        {gameState.resultMessage && <div className="result-message">{gameState.resultMessage}</div>}
-        <div className="players-container">
-          {Object.values(gameState.players).map(player => (
-            <div key={player.id} className="player-card">
-              <div className="player-name">{player.name}</div>
-              <div className="player-score">Pontos: {player.score || 0}</div>
-              {player.id === playerId && (
-                <input 
-                  type="text" 
-                  value={player.number || ''}
-                  onChange={(e) => handleNumberChange(e.target.value)}
-                  placeholder="1-10"
-                  className="input"
-                />
-              )}
-              {player.id !== playerId && (
-                <div>{player.number ? 'Número escolhido' : 'Aguardando...'}</div>
-              )}
+    <div className="container jogo-do-numero">
+      <h1 className="game-title">Jogo do Número</h1>
+
+      <div className="players-overview">
+        {Object.values(players).map((player) => (
+          <div key={player.id} className={`player-overview ${currentTurn === player.id ? 'current-turn' : ''}`}>
+            <div className="player-name">{player.name}</div>
+            <div className="player-number">{player.number || '?'}</div>
+            <div className="player-score">Pontos: {player.score || 0}</div>
+            <div className="player-turn-info">
+              {currentTurn === player.id ? 'Sua vez!' : 'Aguarde...'}
             </div>
-          ))}
-        </div>
-        {playerId === Object.values(gameState.players)[0]?.id && (
-          <div className="button-container">
-            <button onClick={rollDice} className="button primary-button">
-              Girar Dado
-            </button>
-            <button onClick={resetGame} className="button secondary-button">
-              Reiniciar
-            </button>
           </div>
-        )}
+        ))}
+      </div>
+
+      {message && <p className="message">{message}</p>}
+
+      <div className="game-controls">
+        <form onSubmit={handleNumberSubmit} className="number-input">
+          <input
+            type="number"
+            min="1"
+            max="10"
+            value={selectedNumber}
+            onChange={(e) => setSelectedNumber(e.target.value)}
+            placeholder="1-10"
+            className="input"
+            disabled={hasSelectedNumber}
+          />
+          <button type="submit" className="button" disabled={hasSelectedNumber}>
+            Confirmar Número
+          </button>
+        </form>
+
+        <div className="action-buttons">
+          {isPlayerTurn && (
+            <button onClick={rollDice} className="button roll-button">Girar Dado</button>
+          )}
+          {isAdmin && (
+            <button onClick={resetGame} className="button reset-button">Reiniciar Jogo</button>
+          )}
+        </div>
       </div>
     </div>
   );

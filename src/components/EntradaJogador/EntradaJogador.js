@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './EntradaJogador.css';
 
 function EntradaJogador({ onAddPlayer }) {
   const [nome, setNome] = useState('');
@@ -24,25 +25,33 @@ function EntradaJogador({ onAddPlayer }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={nome}
-        onChange={(e) => setNome(e.target.value)}
-        placeholder="Seu nome"
-        required
-      />
-      <input
-        type="text"
-        value={gameId}
-        onChange={(e) => setGameId(e.target.value)}
-        placeholder="ID do Jogo (opcional)"
-      />
-      <button type="submit">
-        {gameId ? 'Juntar-se ao Jogo' : 'Criar Novo Jogo'}
-      </button>
-    </form>
+    <div className="container">
+      <div className="card entrada-jogador">
+        <h2>Jogo do Número</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            className="input"
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Seu nome"
+            required
+          />
+          <input
+            className="input"
+            type="text"
+            value={gameId}
+            onChange={(e) => setGameId(e.target.value)}
+            placeholder="ID do Jogo (opcional)"
+          />
+          <button className="button" type="submit">
+            {gameId ? 'Juntar-se ao Jogo' : 'Criar Novo Jogo'}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
+
 
 export default EntradaJogador;
