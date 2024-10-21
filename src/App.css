@@ -1,9 +1,37 @@
 :root {
-  --primary-color: #4a90e2;
-  --secondary-color: #f39c12;
-  --background-color: #f0f0f0;
-  --text-color: #333;
-  --card-background: #ffffff;
+  /* Tema Claro */
+  --primary-color-light: #3498db;
+  --secondary-color-light: #2e6dcc;
+  --background-color-light: #ecf0f1;
+  --text-color-light: #34495e;
+  --card-background-light: #fff;
+  --card-active-light: #e0f7fa;
+
+  /* Tema Escuro */
+  --primary-color-dark: #2980b9;
+  --secondary-color-dark: #2c3e50;
+  --background-color-dark: #2c3e50;
+  --text-color-dark: #ecf0f1;
+  --card-background-dark: #34495e;
+  --card-active-dark: #2c3e50;
+
+  /* Tema Padrão (Claro) */
+  --primary-color: var(--primary-color-light);
+  --secondary-color: var(--secondary-color-light);
+  --background-color: var(--background-color-light);
+  --text-color: var(--text-color-light);
+  --card-background: var(--card-background-light);
+  --card-active: var(--card-active-light);
+}
+
+/* Classe para o tema escuro */
+.dark-theme {
+  --primary-color: var(--primary-color-dark);
+  --secondary-color: var(--secondary-color-dark);
+  --background-color: var(--background-color-dark);
+  --text-color: var(--text-color-dark);
+  --card-background: var(--card-background-dark);
+  --card-active: var(--card-active-dark);
 }
 
 body {
