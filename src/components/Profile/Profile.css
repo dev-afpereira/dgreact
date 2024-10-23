@@ -1,0 +1,569 @@
+/* Container principal */
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header do perfil */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 40px;
+  padding: 20px;
+  background-color: var(--card-background);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  position: relative;
+}
+
+.profile-avatar img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid var(--primary-color);
+  object-fit: cover;
+}
+
+.change-avatar-button {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+}
+
+.change-avatar-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h1 {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 2em;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.badge.level {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.badge.admin {
+  background-color: #9333ea;
+  color: white;
+}
+
+.badge.achievements {
+  background-color: #10b981;
+  color: white;
+}
+
+/* Mensagem de erro */
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Formulário de edição */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.form-section {
+  background-color: var(--card-background);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+  color: var(--text-color);
+  margin-bottom: 20px;
+  font-size: 1.2em;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.form-group.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-group.checkbox input {
+  width: auto;
+}
+
+/* Conteúdo do perfil */
+.profile-content {
+  display: grid;
+  gap: 30px;
+}
+
+.profile-section {
+  background-color: var(--card-background);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section h2 {
+  color: var(--text-color);
+  margin-bottom: 20px;
+  font-size: 1.2em;
+}
+
+/* Estatísticas */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 15px;
+  background-color: var(--background-color);
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.8em;
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: var(--text-color);
+}
+
+/* Redes Sociais */
+.social-links {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  text-decoration: none;
+  color: white;
+  font-size: 0.9em;
+  transition: transform 0.2s ease;
+}
+
+.social-link:hover {
+  transform: translateY(-2px);
+}
+
+.social-link.twitter {
+  background-color: #1da1f2;
+}
+
+.social-link.twitch {
+  background-color: #9146ff;
+}
+
+.social-link.youtube {
+  background-color: #ff0000;
+}
+
+/* Conquistas */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: var(--background-color);
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.achievement-item:hover {
+  transform: translateX(5px);
+}
+
+.achievement-icon {
+  font-size: 2em;
+}
+
+.achievement-details h3 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1em;
+}
+
+.achievement-details p {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: var(--text-color);
+}
+
+.achievement-date {
+  font-size: 0.8em;
+  color: var(--text-color-secondary);
+}
+
+/* Histórico de Partidas */
+.matches-history {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.match-item {
+  padding: 15px;
+  background-color: var(--background-color);
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.match-item:hover {
+  transform: translateX(5px);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.match-result {
+  font-weight: bold;
+}
+
+.match-result.victory {
+  color: #10b981;
+}
+
+.match-result.defeat {
+  color: #ef4444;
+}
+
+.match-details {
+  display: grid;
+  gap: 10px;
+}
+
+.match-mode,
+.match-score,
+.match-players {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+}
+
+/* Preferências de Notificação */
+.notification-preferences {
+  display: grid;
+  gap: 15px;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--background-color);
+  border-radius: 6px;
+}
+
+.notification-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+}
+
+.notification-status.active {
+  background-color: #10b981;
+  color: white;
+}
+
+.notification-status.inactive {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Botões e Ações */
+.edit-profile-button,
+.save-button,
+.cancel-button,
+.view-all-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-profile-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.save-button {
+  background-color: #10b981;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.view-all-button {
+  background-color: var(--primary-color);
+  color: white;
+  width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.account-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+}
+
+.action-button.admin {
+  background-color: #9333ea;
+  color: white;
+}
+
+.action-button.danger {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.action-button.danger:hover {
+  background-color: #dc2626;
+  color: white;
+}
+
+/* Modal de Exclusão */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.modal-content {
+  background-color: var(--card-background);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.delete-button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-button:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-badges {
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .account-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .match-header {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+
+  .match-details > div {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+}

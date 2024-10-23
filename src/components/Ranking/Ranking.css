@@ -1,0 +1,159 @@
+.ranking-container {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.ranking-header h2 {
+  color: var(--primary-color);
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.ranking-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.ranking-select {
+  padding: 8px 12px;
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ranking-select:hover {
+  border-color: var(--secondary-color);
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--background-color);
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.ranking-item:hover {
+  transform: translateX(5px);
+}
+
+.ranking-item.current-player {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  border: 1px solid var(--primary-color);
+}
+
+.ranking-position {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2em;
+  color: var(--primary-color);
+}
+
+.player-info {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.player-name {
+  display: block;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.player-level {
+  display: block;
+  font-size: 0.8em;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.ranking-score {
+  text-align: right;
+  margin-left: 12px;
+}
+
+.score-value {
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.score-label {
+  display: block;
+  font-size: 0.8em;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.current-player-position {
+  margin-top: 20px;
+}
+
+.separator {
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.5;
+  margin: 10px 0;
+}
+
+.ranking-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-color);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ranking-item {
+  animation: slideIn 0.3s ease-out forwards;
+  animation-delay: calc(var(--index) * 0.1s);
+}
+
+@media (max-width: 768px) {
+  .ranking-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ranking-filters {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .ranking-select {
+    width: 100%;
+  }
+}

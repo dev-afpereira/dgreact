@@ -1,0 +1,209 @@
+:root {
+    --achievement-common: #9ca3af;
+    --achievement-rare: #3b82f6;
+    --achievement-epic: #9333ea;
+    --achievement-legendary: #f59e0b;
+  }
+  
+  .recent-achievements {
+    width: 100%;
+  }
+  
+  .achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .achievement-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    background-color: var(--card-background);
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--rarity-color);
+  }
+  
+  .achievement-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .achievement-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    background-color: var(--background-color);
+    border-radius: 8px;
+    color: var(--rarity-color);
+  }
+  
+  .achievement-content {
+    flex: 1;
+  }
+  
+  .achievement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .achievement-header h4 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+  }
+  
+  .achievement-rarity {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    background-color: var(--background-color);
+    color: var(--rarity-color);
+  }
+  
+  .achievement-description {
+    margin: 0 0 12px 0;
+    font-size: 0.9em;
+    color: var(--text-color-secondary);
+  }
+  
+  .achievement-progress {
+    margin-bottom: 12px;
+  }
+  
+  .progress-bar {
+    height: 6px;
+    background-color: var(--background-color);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: var(--rarity-color);
+    transition: width 0.3s ease;
+  }
+  
+  .progress-text {
+    font-size: 0.8em;
+    color: var(--text-color-secondary);
+  }
+  
+  .achievement-reward {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+    color: #10b981;
+    margin-bottom: 8px;
+  }
+  
+  .achievement-date {
+    font-size: 0.8em;
+    color: var(--text-color-secondary);
+  }
+  
+  .new-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ef4444;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+  }
+  
+  .no-achievements {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    color: var(--text-color-secondary);
+    text-align: center;
+  }
+  
+  .no-achievements i {
+    font-size: 3em;
+    margin-bottom: 15px;
+    color: var(--text-color-secondary);
+  }
+  
+  .view-all-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .view-all-button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+  }
+  
+  /* Rarity-specific styles */
+  .achievement-card.common {
+    --rarity-color: var(--achievement-common);
+  }
+  
+  .achievement-card.rare {
+    --rarity-color: var(--achievement-rare);
+  }
+  
+  .achievement-card.epic {
+    --rarity-color: var(--achievement-epic);
+  }
+  
+  .achievement-card.legendary {
+    --rarity-color: var(--achievement-legendary);
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .achievement-card {
+      flex-direction: column;
+    }
+  
+    .achievement-icon {
+      align-self: center;
+    }
+  
+    .achievement-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .achievement-card {
+      padding: 12px;
+    }
+  }

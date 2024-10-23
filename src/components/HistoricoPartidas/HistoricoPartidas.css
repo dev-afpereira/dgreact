@@ -1,0 +1,159 @@
+.historico-container {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .historico-titulo {
+    color: var(--primary-color);
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .historico-loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-color);
+  }
+  
+  .historico-vazio {
+    text-align: center;
+    color: var(--text-color);
+    font-style: italic;
+  }
+  
+  .partidas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .partida-card {
+    background-color: var(--background-color);
+    border-radius: 6px;
+    padding: 15px;
+    transition: transform 0.2s ease;
+  }
+  
+  .partida-card:hover {
+    transform: translateY(-2px);
+  }
+  
+  .partida-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .partida-data {
+    color: var(--text-color);
+    font-size: 0.9em;
+  }
+  
+  .partida-resultado {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+  
+  .vitoria {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .derrota {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .partida-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .partida-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-color);
+  }
+  
+  .partida-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+  }
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .stat-label {
+    font-size: 0.8em;
+    color: var(--text-color);
+    margin-bottom: 4px;
+  }
+  
+  .stat-value {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+  
+  .partida-players {
+    font-size: 0.9em;
+    color: var(--text-color);
+  }
+  
+  .conquistas-desbloqueadas {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .conquistas-titulo {
+    display: block;
+    font-size: 0.9em;
+    color: var(--text-color);
+    margin-bottom: 5px;
+  }
+  
+  .conquistas-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .conquista-item {
+    background-color: var(--card-background);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  @media (max-width: 768px) {
+    .partida-info {
+      flex-direction: column;
+      gap: 5px;
+    }
+  
+    .partida-stats {
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  
+    .stat-item {
+      flex: 1 1 40%;
+    }
+  }
