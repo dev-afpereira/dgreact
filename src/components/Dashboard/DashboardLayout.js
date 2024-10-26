@@ -1,12 +1,60 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { logoutUser } from '../../services/AuthService';
-import './Dashboard.css';
+import { 
+  Home,
+  User,
+  Gamepad,
+  Trophy,
+  Medal,
+  Settings as SettingsIcon,
+  LogOut,
+  Menu,
+  X,
+  BellRing,
+  ChevronRight
+} from 'lucide-react';
+import './DashboardLayout.css';
 
-function DashboardLayout({ children }) {
-  const { currentUser, userProfile } = useAuth();
+function DashboardLayout() {
+  const { userProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+  const menuItems = [
+    {
+      path: '/dashboard',
+      icon: Home,
+      label: 'Início',
+      description: 'Visão geral e atividades recentes'
+    },
+    {
+      path: '/profile',
+      icon: User,
+      label: 'Perfil',
+      description: 'Gerencie suas informações pessoais'
+    },
+    {
+      path: '/games',
+      icon: Gamepad,
+      label: 'Jogos',
+      description: 'Jogue e veja seu histórico'
+    },
+    {
+      path: '/achievements',
+      icon: Trophy,
+      label: 'Conquistas',
+      description: 'Veja suas conquistas e desafios'
+    },
+    {
+      path: '/ranking',
+      icon: Medal,
+      label: 'Ranking',
+      description: 'Compare seu desempenho'
+    }
+  ];
 
   const handleLogout = async () => {
     try {
@@ -19,84 +67,117 @@ function DashboardLayout({ children }) {
 
   return (
     <div className="dashboard-container">
+      {/* Sidebar Toggle Button (Mobile) */}
+      <button
+        className="sidebar-toggle"
+        onClick={() => setSidebarOpen(!isSidebarOpen)}
+      >
+        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
       {/* Sidebar */}
-      <div className="dashboard-sidebar">
-        <div className="sidebar-header">
+      <aside className={`dashboard-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        {/* User Profile Section */}
+        <div className="sidebar-user">
+          <div className="user-avatar">
+            {userProfile?.photoURL ? (
+              <img src={userProfile.photoURL} alt="Profile" />
+            ) : (
+              <div className="avatar-placeholder">
+                <User size={24} />
+              </div>
+            )}
+            <div className="user-status" />
+          </div>
           <div className="user-info">
-            <img 
-              src={currentUser.photoURL || '/default-avatar.png'} 
-              alt="Avatar" 
-              className="user-avatar"
-            />
-            <div className="user-details">
-              <h3>{userProfile?.username || 'Usuário'}</h3>
-              <span className="user-level">Nível {userProfile?.level || 1}</span>
-            </div>
+            <h3 className="user-name">{userProfile?.username || 'Usuário'}</h3>
+            <span className="user-level">Nível {userProfile?.level || 1}</span>
           </div>
         </div>
 
+        {/* Navigation */}
         <nav className="sidebar-nav">
-          <Link to="/dashboard" className="nav-item">
-            <i className="fas fa-home"></i>
-            <span>Início</span>
-          </Link>
-          <Link to="/dashboard/profile" className="nav-item">
-            <i className="fas fa-user"></i>
-            <span>Perfil</span>
-          </Link>
-          <Link to="/dashboard/games" className="nav-item">
-            <i className="fas fa-gamepad"></i>
-            <span>Jogos</span>
-          </Link>
-          <Link to="/dashboard/achievements" className="nav-item">
-            <i className="fas fa-trophy"></i>
-            <span>Conquistas</span>
-          </Link>
-          <Link to="/dashboard/stats" className="nav-item">
-            <i className="fas fa-chart-bar"></i>
-            <span>Estatísticas</span>
-          </Link>
-          <Link to="/dashboard/ranking" className="nav-item">
-            <i className="fas fa-medal"></i>
-            <span>Ranking</span>
-          </Link>
-          {userProfile?.role === 'admin' && (
-            <Link to="/admin" className="nav-item admin-link">
-              <i className="fas fa-cog"></i>
-              <span>Admin</span>
+          {menuItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+            >
+              <item.icon size={20} />
+              <div className="nav-item-content">
+                <span className="nav-label">{item.label}</span>
+                <span className="nav-description">{item.description}</span>
+              </div>
+              <ChevronRight size={16} className="nav-arrow" />
             </Link>
-          )}
+          ))}
         </nav>
 
+        {/* Footer */}
         <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-button">
-            <i className="fas fa-sign-out-alt"></i>
+          <button 
+            className="settings-button"
+            onClick={() => navigate('/settings')}
+          >
+            <SettingsIcon size={20} />
+            <span>Configurações</span>
+          </button>
+          <button 
+            className="logout-button"
+            onClick={handleLogout}
+          >
+            <LogOut size={20} />
             <span>Sair</span>
           </button>
         </div>
-      </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="dashboard-main">
-        <div className="dashboard-header">
+      <main className="dashboard-main">
+        {/* Header */}
+        <header className="dashboard-header">
+          <div className="breadcrumb">
+            <h1>{getPageTitle(location.pathname)}</h1>
+          </div>
           <div className="header-actions">
-            <button className="notifications-button">
-              <i className="fas fa-bell"></i>
+            <button className="notification-button">
+              <BellRing size={20} />
               {userProfile?.notifications?.unread > 0 && (
-                <span className="notifications-badge">
+                <span className="notification-badge">
                   {userProfile.notifications.unread}
                 </span>
               )}
             </button>
           </div>
-        </div>
+        </header>
 
+        {/* Content */}
         <div className="dashboard-content">
-          {children}
+          <Outlet />
         </div>
-      </div>
+      </main>
+
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
+}
+
+function getPageTitle(pathname) {
+  const titles = {
+    '/dashboard': 'Dashboard',
+    '/profile': 'Perfil',
+    '/games': 'Jogos',
+    '/achievements': 'Conquistas',
+    '/ranking': 'Ranking',
+    '/settings': 'Configurações'
+  };
+  return titles[pathname] || 'Dashboard';
 }
 
 export default DashboardLayout;

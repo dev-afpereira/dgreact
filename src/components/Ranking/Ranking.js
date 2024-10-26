@@ -1,192 +1,209 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
+import { useAuth } from '../../contexts/AuthContext';
+import { ref, onValue, query, orderByChild } from 'firebase/database';
+import { database } from '../../config/firebaseConfig';
+import { Medal, ChevronUp, ChevronDown, Minus, Crown, Award, Target } from 'lucide-react';
 import './Ranking.css';
 
-function Ranking({ database, currentPlayerId }) {
-  const [rankings, setRankings] = useState({
-    pontuacaoTotal: [],
-    sequenciaMaxima: [],
-    vitorias: [],
-    mediaAcertos: []
-  });
-  const [categoria, setCategoria] = useState('pontuacaoTotal');
-  const [periodo, setPeriodo] = useState('geral');
-  const [isLoading, setIsLoading] = useState(true);
+function Ranking() {
+  const { currentUser } = useAuth();
+  const [players, setPlayers] = useState([]);
+  const [timeFrame, setTimeFrame] = useState('all'); // all, weekly, monthly
+  const [currentPage, setCurrentPage] = useState(0);
+  const playersPerPage = 10;
 
   useEffect(() => {
-    const carregarRanking = () => {
-      const rankingRef = ref(database, 'players');
-      
-      return onValue(rankingRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const players = Object.entries(snapshot.val()).map(([id, data]) => ({
-            id,
-            ...data,
-            estatisticas: data.estatisticas || {
-              pontuacaoTotal: 0,
-              sequenciaMaxima: 0,
-              vitorias: 0,
-              partidasJogadas: 0,
-              acertosTotal: 0
-            }
-          }));
+    const rankingRef = ref(database, 'players');
+    const rankingQuery = query(rankingRef, orderByChild('score'));
 
-          // Filtra jogadores baseado no período selecionado
-          const jogadoresFiltrados = filtrarPorPeriodo(players, periodo);
-
-          // Calcula diferentes rankings
-          const novoRanking = {
-            pontuacaoTotal: ordenarJogadores(jogadoresFiltrados, 'pontuacaoTotal'),
-            sequenciaMaxima: ordenarJogadores(jogadoresFiltrados, 'sequenciaMaxima'),
-            vitorias: ordenarJogadores(jogadoresFiltrados, 'vitorias'),
-            mediaAcertos: ordenarJogadores(jogadoresFiltrados, 'mediaAcertos', true)
+    const unsubscribe = onValue(rankingQuery, (snapshot) => {
+      if (snapshot.exists()) {
+        const playersData = [];
+        snapshot.forEach((childSnapshot) => {
+          const player = {
+            id: childSnapshot.key,
+            ...childSnapshot.val(),
           };
+          playersData.push(player);
+        });
 
-          setRankings(novoRanking);
-          setIsLoading(false);
-        }
-      });
-    };
+        // Ordenar por pontuação (decrescente)
+        const sortedPlayers = playersData.sort((a, b) => b.score - a.score);
+        setPlayers(sortedPlayers);
+      }
+     
+    });
 
-    const unsubscribe = carregarRanking();
     return () => unsubscribe();
-  }, [database, periodo]);
+  }, [timeFrame]);
 
-  const filtrarPorPeriodo = (players, periodo) => {
-    const agora = new Date();
-    switch (periodo) {
-      case 'dia':
-        const inicioDia = new Date(agora.setHours(0, 0, 0, 0));
-        return players.filter(p => new Date(p.ultimoJogo) >= inicioDia);
-      
-      case 'semana':
-        const inicioSemana = new Date(agora.setDate(agora.getDate() - agora.getDay()));
-        return players.filter(p => new Date(p.ultimoJogo) >= inicioSemana);
-      
-      case 'mes':
-        const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
-        return players.filter(p => new Date(p.ultimoJogo) >= inicioMes);
-      
-      default:
-        return players;
-    }
+  const getRankChange = (player) => {
+    const change = (player.previousRank || 0) - player.currentRank;
+    if (change > 0) return { icon: <ChevronUp className="text-green-500" />, value: change };
+    if (change < 0) return { icon: <ChevronDown className="text-red-500" />, value: Math.abs(change) };
+    return { icon: <Minus className="text-gray-400" />, value: 0 };
   };
 
-  const ordenarJogadores = (players, categoria, usarMedia = false) => {
-    return [...players]
-      .sort((a, b) => {
-        if (usarMedia) {
-          const mediaA = a.estatisticas.acertosTotal / (a.estatisticas.partidasJogadas || 1);
-          const mediaB = b.estatisticas.acertosTotal / (b.estatisticas.partidasJogadas || 1);
-          return mediaB - mediaA;
-        }
-        return (b.estatisticas[categoria] || 0) - (a.estatisticas[categoria] || 0);
-      })
-      .slice(0, 10);
+  const getPlayerPosition = (player) => {
+    return players.findIndex(p => p.id === player.id) + 1;
   };
 
-  const renderPosicao = (posicao) => {
-    switch (posicao) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return posicao;
-    }
-  };
+  
 
-  const getCategoriaLabel = () => {
-    switch (categoria) {
-      case 'pontuacaoTotal': return 'Pontos';
-      case 'sequenciaMaxima': return 'Seq. Máx';
-      case 'vitorias': return 'Vitórias';
-      case 'mediaAcertos': return 'Média';
-      default: return '';
-    }
-  };
-
-  const getValorCategoria = (player) => {
-    if (categoria === 'mediaAcertos') {
-      const media = player.estatisticas.acertosTotal / (player.estatisticas.partidasJogadas || 1);
-      return media.toFixed(1);
-    }
-    return player.estatisticas[categoria] || 0;
-  };
-
-  if (isLoading) {
-    return <div className="ranking-loading">Carregando ranking...</div>;
-  }
-
-  const rankingAtual = rankings[categoria] || [];
-  const playerRank = rankingAtual.findIndex(p => p.id === currentPlayerId) + 1;
+  // Paginação
+  const indexOfLastPlayer = currentPage * playersPerPage;
+  const indexOfFirstPlayer = indexOfLastPlayer - playersPerPage;
+  const currentPlayers = players.slice(indexOfFirstPlayer, indexOfLastPlayer);
+  const totalPages = Math.ceil(players.length / playersPerPage);
 
   return (
     <div className="ranking-container">
+      {/* Cabeçalho com Filtros */}
       <div className="ranking-header">
-        <h2>Ranking</h2>
-        <div className="ranking-filters">
-          <select 
-            value={categoria} 
-            onChange={(e) => setCategoria(e.target.value)}
-            className="ranking-select"
+        <h1>Ranking</h1>
+        <div className="time-filters">
+          <button
+            className={`filter-button ${timeFrame === 'all' ? 'active' : ''}`}
+            onClick={() => setTimeFrame('all')}
           >
-            <option value="pontuacaoTotal">Pontuação Total</option>
-            <option value="sequenciaMaxima">Maior Sequência</option>
-            <option value="vitorias">Vitórias</option>
-            <option value="mediaAcertos">Média de Acertos</option>
-          </select>
-
-          <select 
-            value={periodo} 
-            onChange={(e) => setPeriodo(e.target.value)}
-            className="ranking-select"
+            Geral
+          </button>
+          <button
+            className={`filter-button ${timeFrame === 'monthly' ? 'active' : ''}`}
+            onClick={() => setTimeFrame('monthly')}
           >
-            <option value="geral">Geral</option>
-            <option value="mes">Este Mês</option>
-            <option value="semana">Esta Semana</option>
-            <option value="dia">Hoje</option>
-          </select>
+            Mensal
+          </button>
+          <button
+            className={`filter-button ${timeFrame === 'weekly' ? 'active' : ''}`}
+            onClick={() => setTimeFrame('weekly')}
+          >
+            Semanal
+          </button>
         </div>
       </div>
 
-      <div className="ranking-list">
-        {rankingAtual.map((player, index) => (
+      {/* Cards de Destaque (Top 3) */}
+      <div className="top-players">
+        {players.slice(0, 3).map((player, index) => (
           <div 
-            key={player.id}
-            className={`ranking-item ${player.id === currentPlayerId ? 'current-player' : ''}`}
+            key={player.id} 
+            className={`top-player-card ${index === 0 ? 'first' : ''}`}
           >
-            <div className="ranking-position">{renderPosicao(index + 1)}</div>
-            <div className="player-info">
-              <span className="player-name">{player.name}</span>
-              <span className="player-level">Nível {player.level || 1}</span>
+            <div className="position-indicator">
+              {index === 0 ? (
+                <Crown className="w-6 h-6 text-yellow-500" />
+              ) : index === 1 ? (
+                <Medal className="w-6 h-6 text-gray-400" />
+              ) : (
+                <Award className="w-6 h-6 text-amber-700" />
+              )}
+              #{index + 1}
             </div>
-            <div className="ranking-score">
-              <span className="score-value">{getValorCategoria(player)}</span>
-              <span className="score-label">{getCategoriaLabel()}</span>
+            <div className="player-avatar">
+              <img 
+                src={player.photoURL || '/default-avatar.png'} 
+                alt={player.username}
+                className="rounded-full w-16 h-16 object-cover"
+              />
+            </div>
+            <div className="player-info">
+              <h3>{player.username}</h3>
+              <div className="player-stats">
+                <span className="level">Nível {player.level}</span>
+                <span className="score">{player.score} pts</span>
+                <span className="winrate">{player.winRate}% vitórias</span>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {!rankingAtual.some(p => p.id === currentPlayerId) && playerRank > 0 && (
-        <div className="current-player-position">
-          <div className="separator">• • •</div>
-          <div className="ranking-item current-player">
-            <div className="ranking-position">{playerRank}</div>
-            <div className="player-info">
-              <span className="player-name">Você</span>
-              <span className="player-level">
-                Nível {rankings[categoria].find(p => p.id === currentPlayerId)?.level || 1}
-              </span>
-            </div>
-            <div className="ranking-score">
-              <span className="score-value">
-                {getValorCategoria(rankings[categoria].find(p => p.id === currentPlayerId) || {})}
-              </span>
-              <span className="score-label">{getCategoriaLabel()}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Tabela de Classificação */}
+      <div className="ranking-table-container">
+        <table className="ranking-table">
+          <thead>
+            <tr>
+              <th>Posição</th>
+              <th>Jogador</th>
+              <th>Nível</th>
+              <th>Pontuação</th>
+              <th>Vitórias</th>
+              <th>Taxa de Vitória</th>
+              <th>Variação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentPlayers.map((player) => {
+              const position = getPlayerPosition(player);
+              const rankChange = getRankChange(player);
+              const isCurrentUser = player.id === currentUser?.uid;
+
+              return (
+                <tr 
+                  key={player.id}
+                  className={isCurrentUser ? 'current-user' : ''}
+                >
+                  <td className="position">
+                    {position <= 3 ? (
+                      <span className={`medal position-${position}`}>
+                        {position === 1 ? '🥇' : position === 2 ? '🥈' : '🥉'}
+                      </span>
+                    ) : position}
+                  </td>
+                  <td className="player">
+                    <div className="player-cell">
+                      <img 
+                        src={player.photoURL || '/default-avatar.png'} 
+                        alt={player.username}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <span>{player.username}</span>
+                      {isCurrentUser && <span className="you-badge">Você</span>}
+                    </div>
+                  </td>
+                  <td className="level">
+                    <div className="level-badge">
+                      <Target className="w-4 h-4" />
+                      {player.level}
+                    </div>
+                  </td>
+                  <td className="score">{player.score}</td>
+                  <td className="wins">{player.wins || 0}</td>
+                  <td className="winrate">{player.winRate}%</td>
+                  <td className="rank-change">
+                    <div className="change-indicator">
+                      {rankChange.icon}
+                      {rankChange.value > 0 && rankChange.value}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Paginação */}
+      <div className="pagination">
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 0}
+          className="pagination-button"
+        >
+          Anterior
+        </button>
+        <span className="page-info">
+          Página {currentPage} de {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="pagination-button"
+        >
+          Próxima
+        </button>
+      </div>
     </div>
   );
 }

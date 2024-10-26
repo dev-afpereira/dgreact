@@ -175,3 +175,13 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+:root {
+  --primary-color: #2563eb;
+  --primary-color-dark: #1d4ed8;
+  --text-color: #111827;
+  --text-color-secondary: #6b7280;
+  --background-color: #f3f4f6;
+  --card-background: #ffffff;
+  --border-color: #d1d5db;
+}

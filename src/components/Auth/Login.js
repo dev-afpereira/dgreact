@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../../services/AuthService';
 import './Auth.css';
@@ -10,6 +10,11 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Limpar o loading quando o componente for desmontado
+  useEffect(() => {
+    return () => setLoading(false);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -17,10 +22,10 @@ function Login() {
 
     try {
       await loginUser(email, password);
+      setLoading(false); // Garantir que o loading seja desativado antes da navegação
       navigate('/dashboard');
     } catch (error) {
       setError(error.message);
-    } finally {
       setLoading(false);
     }
   };

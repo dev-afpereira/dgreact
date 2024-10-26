@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import './SalaDeEspera.css';
 
-function SalaDeEspera({ gameId, players, playerId, onStartGame }) {
+function SalaDeEspera({ gameId, players = {}, playerId, onStartGame }) {
   const [gameMode, setGameMode] = useState('normal');
 
   const handleStartGame = () => {
     onStartGame(gameMode);
   };
 
-  const isAdmin = playerId === Object.keys(players)[0];
+  const playerKeys = Object.keys(players);
+  const isAdmin = playerId === playerKeys[0];
 
   return (
     <div className="container">
@@ -16,12 +17,19 @@ function SalaDeEspera({ gameId, players, playerId, onStartGame }) {
         <h2>Sala de Espera</h2>
         <p>ID do Jogo: {gameId}</p>
         <ul className="players-list">
-          {Object.values(players).map(player => (
-            <li key={player.id} className="player-item">
-              <span className="player-name">{player.name}</span>
-              <span className="player-info">Nível: {player.level || 1}, Pontos: {player.score || 0}</span>
-            </li>
-          ))}
+          {playerKeys.length > 0 ? (
+            playerKeys.map(key => {
+              const player = players[key];
+              return (
+                <li key={player.id} className="player-item">
+                  <span className="player-name">{player.name}</span>
+                  <span className="player-info">Nível: {player.level || 1}, Pontos: {player.score || 0}</span>
+                </li>
+              );
+            })
+          ) : (
+            <li className="player-item">Nenhum jogador na sala.</li>
+          )}
         </ul>
         {isAdmin && (
           <div className="game-options">
@@ -34,7 +42,7 @@ function SalaDeEspera({ gameId, players, playerId, onStartGame }) {
               <option value="bestOfThree">Melhor de 3</option>
             </select>
             <button className="button start-game" onClick={handleStartGame}>
-              Iniciar Jogo ({Object.keys(players).length} jogadores)
+              Iniciar Jogo ({playerKeys.length} jogadores)
             </button>
           </div>
         )}

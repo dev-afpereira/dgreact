@@ -8,13 +8,6 @@ import Ranking from  '../Ranking/Ranking';
 import { verificarConquistas } from '../../services/ConquistasService';
 import { registrarPartida } from '../../services/HistoricoService';
 
-function LoadingSpinner() {
-  return (
-    <div className="loading-spinner">
-      <div className="spinner"></div>
-    </div>
-  );
-}
 
 function JogoDoNumero({ playerId, database, gameId, onExitGame }) {
   const [selectedNumber, setSelectedNumber] = useState('');
@@ -297,7 +290,7 @@ function JogoDoNumero({ playerId, database, gameId, onExitGame }) {
           />
 
           {renderGameModeInfo()}
-          {isLoading && <LoadingSpinner />}
+          
           
           <div className="players-overview">
             {Object.values(players).map((player) => (

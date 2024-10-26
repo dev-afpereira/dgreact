@@ -1,56 +1,49 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { auth } from '../config/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, get } from 'firebase/database';
-import { database } from '../config/firebaseConfig';
+import { auth, database } from '../config/firebaseConfig';
 
 const AuthContext = createContext({
   currentUser: null,
   userProfile: null,
-  loading: true,
   setUserProfile: () => {},
 });
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      
       if (user) {
-        // Buscar perfil do usuário no Realtime Database
         try {
           const userRef = ref(database, `users/${user.uid}`);
           const snapshot = await get(userRef);
           if (snapshot.exists()) {
             setUserProfile(snapshot.val());
           }
+          setCurrentUser(user);
         } catch (error) {
           console.error('Erro ao buscar perfil do usuário:', error);
         }
       } else {
+        setCurrentUser(null);
         setUserProfile(null);
       }
-      
-      setLoading(false);
+      setInitializing(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
-  const value = {
-    currentUser,
-    userProfile,
-    loading,
-    setUserProfile,
-  };
+  if (initializing) {
+    return null;
+  }
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider value={{ currentUser, userProfile, setUserProfile }}>
+      {children}
     </AuthContext.Provider>
   );
 }

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
+import { ref,onValue, query, orderByChild, limitToLast,} from 'firebase/database';
+import { database } from '../../config/firebaseConfig';
+
 import { useNavigate } from 'react-router-dom';
 import './QuickRanking.css';
 
-function QuickRanking({ database, currentPlayerId }) {
+function QuickRanking({currentPlayerId }) {
   const [topPlayers, setTopPlayers] = useState([]);
   const [playerRank, setPlayerRank] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,7 @@ function QuickRanking({ database, currentPlayerId }) {
     });
 
     return () => unsubscribe();
-  }, [database, currentPlayerId]);
+  }, [currentPlayerId]);
 
   const getRankDisplay = (index) => {
     switch (index) {

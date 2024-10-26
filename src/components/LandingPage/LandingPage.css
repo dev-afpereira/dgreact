@@ -1,0 +1,276 @@
+/* Reset Básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f3f4f6;
+  color: #333;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Layout Geral */
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Navbar Sticky com cantos arredondados */
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 15px 30px;
+  background-color: #fff;
+  border-radius: 0 0 12px 12px; /* Arredondamento nos cantos inferiores */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-logo .logo-text {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #6a0dad;
+}
+
+.nav-buttons .nav-button {
+  padding: 10px 25px;
+  font-size: 1rem;
+  margin-left: 10px;
+  border-radius: 30px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.nav-button.primary {
+  background: linear-gradient(135deg, #6a0dad, #b19cd9);
+  color: #fff;
+}
+
+.nav-button.primary:hover {
+  border-color: #6a0dad;
+  background: #fff;
+  color: #6a0dad;
+}
+
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #6a0dad, #b19cd9);
+  color: #fff;
+  border-radius: 12px;
+  margin: 40px 0;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.hero-buttons .hero-button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  margin: 15px;
+  border-radius: 30px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.hero-button.primary {
+  background-color: #fff;
+  color: #6a0dad;
+}
+
+.hero-button.primary:hover {
+  background-color: #f3e8ff;
+}
+
+.hero-button.secondary {
+  background-color: #b19cd9;
+  color: #fff;
+}
+
+.hero-button.secondary:hover {
+  background-color: #8b70b9;
+}
+
+/* Features Section */
+.features-section {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.section-header h2 {
+  font-size: 2rem;
+  color: #6a0dad;
+  margin-bottom: 5px;
+}
+
+.section-header p {
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
+
+.feature-card {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 250px;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* How to Play Section */
+.how-to-play-section {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f7f2ff;
+  border-radius: 12px;
+}
+
+.steps-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
+
+.step-card {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 250px;
+}
+
+.step-number {
+  font-size: 2.2rem;
+  color: #6a0dad;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Stats Section */
+.stats-section {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 180px;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  color: #6a0dad;
+  font-weight: bold;
+}
+
+/* CTA Section */
+.cta-section {
+  text-align: center;
+  padding: 70px 20px;
+  background: linear-gradient(135deg, #b19cd9, #6a0dad);
+  color: #fff;
+  border-radius: 12px;
+  margin: 40px 0;
+}
+
+.cta-button {
+  padding: 15px 35px;
+  font-size: 1.1rem;
+  background-color: #fff;
+  color: #6a0dad;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #f3e8ff;
+}
+
+/* Footer atualizado */
+.landing-footer {
+  width: 100%;
+  padding: 40px;
+  background: linear-gradient(135deg, #6a0dad, #b19cd9);
+  color: #fff;
+  margin-top: 40px;
+  border-radius: 12px 12px 0 0; /* Arredondamento nos cantos superiores */
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.footer-section h4 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.footer-section a {
+  color: #f3e8ff;
+  text-decoration: none;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #e0cfff;
+}
