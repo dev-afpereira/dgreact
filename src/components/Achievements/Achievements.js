@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+
 import './Achievements.css';
 
 function Achievements() {
-  const { userProfile } = useAuth();
+  
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
