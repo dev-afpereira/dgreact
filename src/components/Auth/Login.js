@@ -1,31 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginUser } from '../../services/AuthService';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-toastify';
 import './Auth.css';
 
 function Login() {
+  const authContext = useAuth();
+  console.log('Auth Context:', authContext); // Para debug
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Limpar o loading quando o componente for desmontado
-  useEffect(() => {
-    return () => setLoading(false);
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
-      await loginUser(email, password);
-      setLoading(false); // Garantir que o loading seja desativado antes da navegação
+      if (typeof authContext.loginUser !== 'function') {
+        throw new Error('Função de login não está disponível');
+      }
+      await authContext.loginUser(email, password);
       navigate('/dashboard');
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      console.error('Firebase error code:', err.code);
+      console.error('Firebase error message:', err.message);
+      toast.error(
+        `Erro no login: ${err.message}`
+      );
+    } finally {
       setLoading(false);
     }
   };
@@ -34,7 +37,7 @@ function Login() {
     <div className="auth-container">
       <div className="auth-box">
         <h2>Login</h2>
-        {error && <div className="auth-error">{error}</div>}
+        {authContext.error && <div className="auth-error">{authContext.error}</div>}
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">

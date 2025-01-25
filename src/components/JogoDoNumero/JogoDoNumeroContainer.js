@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { useAuth } from '../../contexts/AuthContext';
-import { database } from '../../config/firebaseConfig'; // Corrigido o caminho da importação
+import { database } from '../../config/firebaseConfig';
 import JogoDoNumero from './JogoDoNumero';
+import Chat from '../Chat/Chat';
 
 function JogoDoNumeroContainer() {
   const { gameId } = useParams();
@@ -18,6 +19,8 @@ function JogoDoNumeroContainer() {
       const data = snapshot.val();
       if (data) {
         setGameData(data);
+      } else {
+        console.error('Jogo não encontrado');
       }
     });
 
@@ -38,12 +41,20 @@ function JogoDoNumeroContainer() {
   }
 
   return (
-    <JogoDoNumero
-      gameId={gameId}
-      playerId={currentUser.uid}
-      gameData={gameData}
-      onExitGame={handleExitGame}
-    />
+    <div>
+      <JogoDoNumero
+        gameId={gameId}
+        playerId={currentUser.uid}
+        gameData={gameData}
+        onExitGame={handleExitGame}
+      />
+      <Chat 
+        gameId={gameId}
+        playerId={currentUser.uid}
+        playerName={gameData.players[currentUser.uid]?.name || ''}
+        database={database}
+      />
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { initializeDatabase } from './services/DatabaseInitService';
@@ -16,10 +16,7 @@ import DashboardLayout from './components/Dashboard/DashboardLayout';
 import LandingPage from './components/LandingPage/LandingPage';
 
 // Componentes do Jogo
-import JogoDoNumero from './components/JogoDoNumero/JogoDoNumero';
 import JogoDoNumeroContainer from './components/JogoDoNumero/JogoDoNumeroContainer';
-
-import SalaDeEspera from './components/SalaDeEspera/SalaDeEspera';
 import SalaDeEsperaContainer from './components/SalaDeEspera/SalaDeEsperaContainer';
 
 // Componentes do Dashboard (Lazy Loading)
@@ -31,14 +28,22 @@ const Ranking = lazy(() => import('./components/Ranking/Ranking'));
 const Settings = lazy(() => import('./components/Settings/Settings'));
 
 function App() {
+  const [notification, setNotification] = useState(null); // Estado para notificações
+
   useEffect(() => {
     initializeDatabase();
   }, []);
+
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000); // Limpar a notificação após 3 segundos
+  };
 
   return (
     <Router>
       <AuthProvider>
         <Suspense fallback={<div>Carregando...</div>}>
+          {notification && <div className="notification">{notification}</div>} {/* Exibir notificação */}
           <Routes>
             {/* Landing Page (Página Inicial Pública) */}
             <Route path="/" element={<LandingPage />} />
@@ -66,34 +71,18 @@ function App() {
 
             {/* Rotas do Jogo */}
             <Route
-  path="/sala-de-espera/:gameId"
-  element={
-    <ProtectedRoute>
-      <SalaDeEsperaContainer />
-    </ProtectedRoute>
-  }
-/>
-            <Route
               path="/sala-de-espera/:gameId"
               element={
                 <ProtectedRoute>
-                  <SalaDeEspera />
+                  <SalaDeEsperaContainer />
                 </ProtectedRoute>
               }
             />
             <Route
-  path="/jogo/:gameId"
-  element={
-    <ProtectedRoute>
-      <JogoDoNumeroContainer />
-    </ProtectedRoute>
-  }
-/>
-            <Route
               path="/jogo/:gameId"
               element={
                 <ProtectedRoute>
-                  <JogoDoNumero />
+                  <JogoDoNumeroContainer />
                 </ProtectedRoute>
               }
             />

@@ -10,7 +10,7 @@ import {
   Save, 
   X, 
   Mail, 
-  Calendar,
+  Calendar, 
   Award,
   Target,
   Trophy
@@ -27,6 +27,8 @@ function Profile() {
     username: userProfile?.username || '',
     bio: userProfile?.bio || '',
   });
+
+  const [errors, setErrors] = useState({});
 
   const statsCards = [
     {
@@ -70,9 +72,26 @@ function Profile() {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.username) {
+      newErrors.username = 'Nome de usuário é obrigatório.';
+    }
+    if (formData.username.length < 3) {
+      newErrors.username = 'Nome de usuário deve ter pelo menos 3 caracteres.';
+    }
+    if (formData.bio && formData.bio.length > 200) {
+      newErrors.bio = 'Biografia não pode ter mais de 200 caracteres.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
@@ -190,6 +209,7 @@ function Profile() {
               placeholder="Seu nome de usuário"
               disabled={loading}
             />
+            {errors.username && <span className="error">{errors.username}</span>}
           </div>
 
           <div className="form-group">
@@ -201,6 +221,7 @@ function Profile() {
               rows={4}
               disabled={loading}
             />
+            {errors.bio && <span className="error">{errors.bio}</span>}
           </div>
 
           <div className="form-buttons">
